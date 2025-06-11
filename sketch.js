@@ -1,11 +1,6 @@
-let strokeColor; 
-let baseCircleColor;   // color for the big background circle (usually light color)
-let outerDotColor;     // color for the dots in the outer rings (usually reddish)
-let angleDots = 0;     // controls how much the red dots rotate
-let dotSizes = [];     // stores the size of each ring of dots
 let song, fft, button; // Music and control button variables
 let expandingCircles = []; // Used to store the expanding large circles
-let lineRotation = 0; // Global variable: angle for rotating the spike lines, starts at 0
+let patternCircle; // Global variable: angle for rotating the spike lines, starts at 0
 
 function preload(){
   song = loadSound('audio/girlfriend.MP3');
@@ -15,7 +10,6 @@ function setup() {
   // Create the canvas using  the size of the window
   createCanvas(windowWidth, windowHeight);
   angleMode(RADIANS); // use radians for angle measurements
-  generateColors();
 
   // Start music loop and connect FFT analyzer
   song.loop();
@@ -28,12 +22,8 @@ function setup() {
   button.position((width - button.width) / 2, height - button.height - 10);
   button.mousePressed(playPause);
 
-  // Set the size of the dots in each ring
-  let maxRadius = 200 * 1.4; // same as used in drawOuterDots
-  for (let r = 10; r < maxRadius; r += 12) {
-    let size = random(3, 6); // fix a random size per ring
-    dotSizes.push(size);
-  }
+  // Initialize the main pattern circle at the center with radius 200
+  patternCircle = new PatternCircle(width / 2, height / 2, 200);
 }
 
 // Move the button when window size changes
@@ -67,89 +57,103 @@ function draw() {
   // Spawn a new expanding circle when the beat is strong.
   // At most one circle is added every 5 frames to avoid overcrowding.
   if (level > 100 && frameCount % 5 === 0) { 
-    expandingCircles.push({
-      radius: 120,
-      alpha: 255
-    });
+    expandingCircles.push(
+      new ExpandingCircle(120, 255)
+    );
   }
 
-  // Update and display each expanding circle.
+  // Update and draw all expanding circles; remove them once fully transparent
   for (let i = expandingCircles.length - 1; i >= 0; i--) {
     let ec = expandingCircles[i];
-    ec.radius += 5; // Grow larger each frame
-    ec.alpha -= 2;  // Fade out each frame
-  
-    fill(145, 150, 255, ec.alpha);
-    noStroke();  
-    ellipse(width / 2, height / 2, ec.radius); 
-  
-    // Remove the circle when it is fully transparent
-    if (ec.alpha <= 0) {
+    ec.update();
+    ec.draw(width /2, height / 2);
+    if (ec.isInvisible()) {
       expandingCircles.splice(i, 1);
     }
   }
-
-  drawPatternCircle(width / 2, height / 2, 200, scale, dotNumber, outerR);// draw at the center
-  angleDots += speed;// controls how fast the red dots rotate
-  lineRotation -= speed;// Rotate the spike lines counterclockwise by decreasing the angle each frame
+  
+  // Update rotation angles and draw the central pattern circle
+  patternCircle.update(speed);
+  patternCircle.draw(scale, dotNumber, outerR);
 }
 
+// Class representing a large circle that expands and fades out to create ripple effect
+class ExpandingCircle {
+  constructor(radius, alpha) {
+    this.radius = radius; // Initial radius of the circle
+    this.alpha = alpha;   // Initial transparency (255 = fully opaque)
+  }
 
- // Generate new random colors and dot sizes
-  function generateColors() {    
-    // Re-generate dot sizes for each ring
-    dotSizes = [];
-    let maxRadius = 200 * 0.6;
-    for (let r = 10; r < maxRadius; r += 12) {
-      let size = random(3, 6); // fix a random size per ring
-      dotSizes.push(size);
+  update() {
+    this.radius += 5; // Increase radius to simulate expansion
+    this.alpha -= 2;  // Decrease alpha to fade out gradually
+  }
+  isInvisible() {
+    return this.alpha <= 0; // Circle is invisible when fully transparent
+  }
+  draw(x, y){
+    fill(145, 150, 255, this.alpha);
+    noStroke();  
+    ellipse(x, y, this.radius); 
     }
   }
 
+class PatternCircle{
+  constructor(x, y, r) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.angleDots = 0;     // Controls rotation angle for red dots
+    this.lineRotation = 0;  // Controls rotation for spike lines
+  }
 
-  // Draw everything in this circle
-  function drawPatternCircle(x, y, r, scale, dotNumber, outerR) {
+  update(speed){
+  this.angleDots += speed;// controls how fast the red dots rotate
+  this.lineRotation -= speed;// Rotate the spike lines counterclockwise by decreasing the angle each frame
+  }
+
+  draw(scale, dotNumber, outerR){
     push();
-    translate(x, y); 
+    translate(this.x, this.y);
 
     // Draw white background circle
     fill(145, 150, 255);
     noStroke();
-    circle(0, 0, r * 1.3);
+    circle(0, 0, this.r * 1.3);
 
     // Draw rotating red dots
     push();
-    rotate(angleDots); 
-    drawOuterDots(0, 0, r, dotNumber);
+    rotate(this.angleDots); 
+    this.drawOuterDots(0, 0, this.r, dotNumber);
     pop();
 
     // Draw the pink background circle
     fill(145, 150, 255);
     noStroke();
-    circle(0, 0, r * 0.63);
+    circle(0, 0, this.r * 0.63);
 
     // spike lines
-    drawLine(20, outerR, 30); 
+    this.drawLine(20, outerR, 30); 
 
     // Small circles stacked in the center
     noStroke();
     fill(98, 240, 224);
-    circle(0, 0, r * 0.23);
+    circle(0, 0, this.r * 0.23);
 
     fill(214, 178, 255);
-    circle(0, 0, r * 0.2);
+    circle(0, 0, this.r * 0.2);
 
     noFill();
     stroke(80, 255, 120, 60);
     strokeWeight(2.5);
     fill(189, 153, 255);
-    circle(0, 0, r * 0.15);
+    circle(0, 0, this.r * 0.15);
 
     fill(168, 106, 255);
-    circle(0, 0, r * 0.07);
+    circle(0, 0,  this.r * 0.07);
 
     fill(126, 55, 255);
-    circle(0, 0, r * 0.03);
+    circle(0, 0,  this.r * 0.03);
 
     // Draw two black arcs for decoration
     stroke(98, 240, 224);
@@ -162,9 +166,9 @@ function draw() {
   }
   
   // Function to draw radial spike lines from the center
-  function drawLine(innerR, outerR, spikes){
+  drawLine(innerR, outerR, spikes){
     push();
-    rotate(lineRotation);
+    rotate(this.lineRotation);
     
     stroke(98, 240, 224);
     for (let i = 0; i < spikes; i++) {
@@ -181,9 +185,8 @@ function draw() {
   }
 
   // Draw spinning rings of dots around the center
-  function drawOuterDots(x, y, r, dotNumber) {
+  drawOuterDots(x, y, r, dotNumber) {
     let maxRadius = r * 0.6 * dotNumber;
-    let ringIndex = 0;
 
     //Creates a visual effect that gradually expands and fades from the center outward.
     for (let i = 10; i < maxRadius; i += 12) {
@@ -201,6 +204,6 @@ function draw() {
         noStroke();
         ellipse(dx, dy, dotSize); // draw each dot
       }
-      ringIndex++;
     }
   }
+}
