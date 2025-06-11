@@ -5,6 +5,7 @@ let angleDots = 0;     // controls how much the red dots rotate
 let dotSizes = [];     // stores the size of each ring of dots
 let song, fft, button; // Music and control button variables
 let expandingCircles = []; // Used to store the expanding large circles
+let lineRotation = 0; // Global variable: angle for rotating the spike lines, starts at 0
 
 function preload(){
   song = loadSound('audio/girlfriend.MP3');
@@ -59,6 +60,7 @@ function draw() {
   let scale = map(level, 0, 255, 1.0, 3,0); 
   let dotNumber = map(level, 0, 255, 1.0, 2.5);
   let speed = map(level, 0, 255, 0.001, 0.05); // change sound level into rotation speed
+  let outerR = map(level, 0, 255, 0, 100)// The outer radius changes with the music level: louder is longer spikes
   
   //Whenever the beat gets stronger, new large circles are spawned at the center. 
   // Each circle grows in size and fades out, creating a ripple-like effect—one ring per beat.
@@ -87,8 +89,9 @@ function draw() {
     }
   }
 
-  drawPatternCircle(width / 2, height / 2, 200, scale, dotNumber);// draw at the center
+  drawPatternCircle(width / 2, height / 2, 200, scale, dotNumber, outerR);// draw at the center
   angleDots += speed;// controls how fast the red dots rotate
+  lineRotation -= speed;// Rotate the spike lines counterclockwise by decreasing the angle each frame
 }
 
 
@@ -105,7 +108,7 @@ function draw() {
 
 
   // Draw everything in this circle
-  function drawPatternCircle(x, y, r, scale, dotNumber) {
+  function drawPatternCircle(x, y, r, scale, dotNumber, outerR) {
     push();
     translate(x, y); 
 
@@ -125,22 +128,8 @@ function draw() {
     noStroke();
     circle(0, 0, r * 0.63);
 
-    // Draw lines from center like spikes
-    stroke(98, 240, 224);
-    let spikes = 30;
-    let innerR = 20;
-    let outerR = 59;
-
-    for (let i = 0; i < spikes; i++) {
-      strokeWeight(i % 2 === 0 ? 3 : 1.5); // thick and thin lines
-      let angle1 = TWO_PI * i / spikes;
-      let angle2 = TWO_PI * (i + 1) / spikes;
-      let x1 = cos(angle1) * innerR;
-      let y1 = sin(angle1) * innerR;
-      let x2 = cos(angle2) * outerR;
-      let y2 = sin(angle2) * outerR;
-      line(x1, y1, x2, y2);
-    }
+    // spike lines
+    drawLine(20, outerR, 30); 
 
     // Small circles stacked in the center
     noStroke();
@@ -170,6 +159,25 @@ function draw() {
     arc(0, 0, 20, 25, PI * 0.45, PI * 0.75);
 
     pop(); // end main drawing
+  }
+  
+  // Function to draw radial spike lines from the center
+  function drawLine(innerR, outerR, spikes){
+    push();
+    rotate(lineRotation);
+    
+    stroke(98, 240, 224);
+    for (let i = 0; i < spikes; i++) {
+      strokeWeight(i % 2 === 0 ? 3 : 1.5); // thick and thin lines
+      let angle1 = TWO_PI * i / spikes;
+      let angle2 = TWO_PI * (i + 1) / spikes;
+      let x1 = cos(angle1) * innerR;
+      let y1 = sin(angle1) * innerR;
+      let x2 = cos(angle2) * outerR;
+      let y2 = sin(angle2) * outerR;
+      line(x1, y1, x2, y2);
+    }
+    pop();
   }
 
   // Draw spinning rings of dots around the center
