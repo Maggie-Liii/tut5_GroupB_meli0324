@@ -3,6 +3,7 @@ let baseCircleColor;   // color for the big background circle (usually light col
 let outerDotColor;     // color for the dots in the outer rings (usually reddish)
 let angleDots = 0;     // controls how much the red dots rotate
 let dotSizes = [];     // stores the size of each ring of dots
+let song, fft, button; // Music and control button variables
 
 function preload(){
   song = loadSound('audio/I want that.MP3');
@@ -54,9 +55,10 @@ function draw() {
   // Get average energy level from FFT spectrum and map it to rotation speed
   let spectrum = fft.analyze();
   let level = fft.getEnergy("mid"); // Using "mid" frequency energy for visual sync
+  let scale = map(level, 0, 255, 1.0, 2,0); 
   let speed = map(level, 0, 255, 0.001, 0.05); // change sound level into rotation speed
   
-  drawPatternCircle(width / 2, height / 2, 200);// draw at the center
+  drawPatternCircle(width / 2, height / 2, 200, scale);// draw at the center
   angleDots += speed;// controls how fast the red dots rotate
 }
 
@@ -81,14 +83,14 @@ function draw() {
 
 
   // Draw everything in this circle
-  function drawPatternCircle(x, y, r) {
+  function drawPatternCircle(x, y, r, scale) {
     push();
     translate(x, y); 
 
     // Draw white background circle
     fill(baseCircleColor);
     noStroke();
-    circle(0, 0, r * 1.3);
+    circle(0, 0, r * 1.3*scale);
 
     // Draw rotating red dots
     push();
