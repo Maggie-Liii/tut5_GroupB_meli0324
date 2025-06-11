@@ -3,104 +3,78 @@ let baseCircleColor;   // color for the white background circle
 let outerDotColor;     // color for the red dots outside
 let angleDots = 0;     // controls how much the red dots rotate
 let dotSizes = [];     // stores the size of each ring of dots
-let circles = [];      // an array to store all circle objects
+
 
 function setup() {
   // Create the canvas using the size of the window
   createCanvas(windowWidth, windowHeight);
   angleMode(RADIANS); // use radians for angle measurements
+  generateColors();
 
-  // Set center of the screen and circle size
-  let centerX = windowWidth / 2;
-  let centerY = windowHeight / 2;
-  let radius = 200; 
-  let spacing = radius * 1.5; // distance between circle centers
-
-  // Add one circle in the center
-  circles.push(new PatternCircle(centerX, centerY, radius));
-
-  // Add 6 outer circles around the center
-  for (let i = 0; i < 6; i++) {
-    let angle = TWO_PI / 6 * i;
-    let x = centerX + cos(angle) * spacing;
-    let y = centerY + sin(angle) * spacing;
-    circles.push(new PatternCircle(x, y, radius));
-  }
+  // Set the size of the dots in each ring
+  let maxRadius = 200 * 1.4; // same as used in drawOuterDots
+    for (let r = 10; r < maxRadius; r += 12) {
+      let size = random(3, 6); // fix a random size per ring
+      dotSizes.push(size);
+    }
 }
 
 function draw() {
   background(20); // dark background
-  for (let c of circles) {
-    c.update(); // update animations
-    c.draw();   // draw each circle
-  }
+  drawPatternCircle(width / 2, height / 2, 200);// draw at the center
+  angleDots += 0.005;// controls how fast the red dots rotate
 }
 
-// When mouse is clicked, change colors of all circles
-function mousePressed() {
-  for (let c of circles) {
-    c.generateColors();
-  }
-}
 
-// This class creates each circle design
-class PatternCircle {
-  constructor(x, y, r) {
-    this.x = x;
-    this.y = y;
-    this.r = r;
-    this.angleDots = random(TWO_PI); // start rotation from a random angle
-    this.dotSizes = [];              
-    this.generateColors();           // pick random colors
-  }
-
-  // Pick random colors for this circle
-  generateColors() {
-    this.strokeColor = color(random(0, 255), random(0, 100), random(10, 150));
-    this.baseCircleColor = color(random(200, 255), random(200, 255), random(200, 255));
-    this.bgColor = color(random(150, 255), random(150, 255), random(150, 255));
-    this.lineColor = color(random(200, 255), random(200, 255), random(0, 100));
-    this.outerDotColor = color(random(0, 255), random(0, 80), random(0, 255));
-
-    this.dotSizes = [];
-    let maxRadius = this.r * 0.6;
+ // Generate new random colors
+  function generateColors() {
+    // pastel colors for background circles
+    strokeColor = color(random(0, 255), random(0, 100), random(10, 150));
+    baseCircleColor = color(random(200, 255), random(200, 255), random(200, 255));
+    bgColor = color(random(150, 255), random(150, 255), random(150, 255));
+    
+    // bright yellow for radial lines, vibrant red-purple for dots
+    lineColor = color(random(200, 255), random(200, 255), random(0, 100));
+    outerDotColor = color(random(0, 255), random(0, 80), random(0, 255));
+    
+    // Re-generate dot sizes for each ring
+    dotSizes = [];
+    let maxRadius = 200 * 0.6;
     for (let r = 10; r < maxRadius; r += 12) {
-      this.dotSizes.push(random(3, 6)); // choose size for each ring of dots
+      let size = random(3, 6); // fix a random size per ring
+      dotSizes.push(size);
     }
   }
 
-  // Slowly rotate the red dots
-  update() {
-    this.angleDots += 0.005;
-  }
 
   // Draw everything in this circle
-  draw() {
+  function drawPatternCircle(x, y, r) {
     push();
-    translate(this.x, this.y); // move to the circle’s center
+    translate(x, y); 
 
     // Draw white background circle
-    fill(this.baseCircleColor);
+    fill(baseCircleColor);
     noStroke();
-    circle(0, 0, this.r * 1.3);
+    circle(0, 0, r * 1.3);
 
     // Draw rotating red dots
     push();
-    rotate(this.angleDots); 
-    this.drawOuterDots(0, 0, this.r);
+    rotate(angleDots); 
+    drawOuterDots(0, 0, r);
     pop();
 
     // Draw the pink background circle
-    fill(this.bgColor);
-    stroke(this.strokeColor);
+    fill(bgColor);
+    stroke(strokeColor);
     strokeWeight(5);
-    circle(0, 0, this.r * 0.63);
+    circle(0, 0, r * 0.63);
 
     // Draw lines from center like spikes
-    stroke(this.lineColor);
+    stroke(lineColor);
     let spikes = 30;
     let innerR = 20;
     let outerR = 59;
+
     for (let i = 0; i < spikes; i++) {
       strokeWeight(i % 2 === 0 ? 3 : 1.5); // thick and thin lines
       let angle1 = TWO_PI * i / spikes;
@@ -112,25 +86,25 @@ class PatternCircle {
       line(x1, y1, x2, y2);
     }
 
-    // Draw several small colored circles in the center
+    // // Layered small center circles
     noStroke();
     fill(255, 65, 70);
-    circle(0, 0, this.r * 0.23);
+    circle(0, 0, r * 0.23);
 
     fill(100, 130, 100);
-    circle(0, 0, this.r * 0.2);
+    circle(0, 0, r * 0.2);
 
     noFill();
     stroke(80, 255, 120, 60);
     strokeWeight(2.5);
     fill(180, 50, 80);
-    circle(0, 0, this.r * 0.15);
+    circle(0, 0, r * 0.15);
 
     fill(30, 180, 60);
-    circle(0, 0, this.r * 0.07);
+    circle(0, 0, r * 0.07);
 
     fill(255);
-    circle(0, 0, this.r * 0.03);
+    circle(0, 0, r * 0.03);
 
     // Draw two black arcs for decoration
     stroke(30, 40, 50, 90);
@@ -147,32 +121,32 @@ class PatternCircle {
     stroke(255, 0, 100);
     strokeWeight(5);
     noFill();
-    bezier(0, 0, this.r * 0.3, -this.r * 0.1, this.r * 0.5, this.r * 0.05, this.r * 0.65, this.r * 0.2);
+    bezier(0, 0, r * 0.3, -r * 0.1, r * 0.5, r * 0.05, r * 0.65, r * 0.2);
 
     stroke(255, 60, 160);
     strokeWeight(3);
-    bezier(0, 0, this.r * 0.3, -this.r * 0.1, this.r * 0.5, this.r * 0.05, this.r * 0.65, this.r * 0.2);
+    bezier(0, 0, r * 0.3, -r * 0.1, r * 0.5, r * 0.05, r * 0.65, r * 0.2);
 
     pop(); // end bezier rotation
     pop(); // end main drawing
   }
 
   // Draw red dots in rings around the center
-  drawOuterDots(x, y, r) {
+  function drawOuterDots(x, y, r) {
     let maxRadius = r * 0.6;
     let ringIndex = 0;
     for (let i = 10; i < maxRadius; i += 12) {
       let numDots = floor(TWO_PI * i / 10); // how many dots on this ring
-      let dotSize = this.dotSizes[ringIndex];
+      let dotSize = dotSizes[ringIndex];
+      
       for (let j = 0; j < numDots; j++) {
         let angle = TWO_PI * j / numDots;
         let dx = x + cos(angle) * i;
         let dy = y + sin(angle) * i;
-        fill(this.outerDotColor);
+        fill(outerDotColor);
         noStroke();
         ellipse(dx, dy, dotSize); // draw each dot
       }
       ringIndex++;
     }
   }
-}
