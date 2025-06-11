@@ -73,16 +73,16 @@ function draw() {
 
   // Update and display each expanding circle.
   for (let i = expandingCircles.length - 1; i >= 0; i--) {
-    let c = expandingCircles[i];
-    c.radius += 5; // Grow larger each frame
-    c.alpha -= 2;  // Fade out each frame
+    let ec = expandingCircles[i];
+    ec.radius += 5; // Grow larger each frame
+    ec.alpha -= 2;  // Fade out each frame
   
-    fill(145, 150, 255, c.alpha);
+    fill(145, 150, 255, ec.alpha);
     noStroke();  
-    ellipse(width / 2, height / 2, c.radius); 
+    ellipse(width / 2, height / 2, ec.radius); 
   
     // Remove the circle when it is fully transparent
-    if (c.alpha <= 0) {
+    if (ec.alpha <= 0) {
       expandingCircles.splice(i, 1);
     }
   }
@@ -177,15 +177,19 @@ function draw() {
     let maxRadius = r * 0.6 * dotNumber;
     let ringIndex = 0;
 
+    //Creates a visual effect that gradually expands and fades from the center outward.
     for (let i = 10; i < maxRadius; i += 12) {
-      let numDots = floor(TWO_PI * i / 10); // how many dots on this ring
-      let dotSize = dotSizes[ringIndex];
+      let numDots = floor(TWO_PI * i / 15); // how many dots on this ring
+      // Dot size adjustment: the farther from the center, the larger the dots
+      let dotSize = map(i, 10, maxRadius, 3, 10);
+      // Dot transparency: the farther from the center, the more transparent the dots
+      let dotAlpha = map(i, 10, maxRadius, 255, 25);
       
       for (let j = 0; j < numDots; j++) {
         let angle = TWO_PI * j / numDots;
         let dx = x + cos(angle) * i;
         let dy = y + sin(angle) * i;
-        fill(255);
+        fill(255, dotAlpha);
         noStroke();
         ellipse(dx, dy, dotSize); // draw each dot
       }
