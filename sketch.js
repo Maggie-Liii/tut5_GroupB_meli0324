@@ -6,11 +6,11 @@ let dotSizes = [];     // stores the size of each ring of dots
 let song, fft, button; // Music and control button variables
 
 function preload(){
-  song = loadSound('audio/I want that.MP3');
+  song = loadSound('audio/girlfriend.MP3');
 }
 
 function setup() {
-  // Create the canvas using the size of the window
+  // Create the canvas using  the size of the window
   createCanvas(windowWidth, windowHeight);
   angleMode(RADIANS); // use radians for angle measurements
   generateColors();
@@ -55,23 +55,17 @@ function draw() {
   // Get average energy level from FFT spectrum and map it to rotation speed
   let spectrum = fft.analyze();
   let level = fft.getEnergy("mid"); // Using "mid" frequency energy for visual sync
-  let scale = map(level, 0, 255, 1.0, 2,0); 
+  let scale = map(level, 0, 255, 1.0, 3,0); 
+  let dotNumber = map(level, 0, 255, 1.0, 2.5);
   let speed = map(level, 0, 255, 0.001, 0.05); // change sound level into rotation speed
   
-  drawPatternCircle(width / 2, height / 2, 200, scale);// draw at the center
+  drawPatternCircle(width / 2, height / 2, 200, scale, dotNumber);// draw at the center
   angleDots += speed;// controls how fast the red dots rotate
 }
 
 
  // Generate new random colors and dot sizes
-  function generateColors() {
-    // pastel colors for background circles
-    strokeColor = color(random(0, 255), random(0, 100), random(10, 150));
-    baseCircleColor = color(random(200, 255), random(200, 255), random(200, 255));
-    bgColor = color(random(150, 255), random(150, 255), random(150, 255));
-    lineColor = color(random(200, 255), random(200, 255), random(0, 100));
-    outerDotColor = color(random(0, 255), random(0, 80), random(0, 255));
-    
+  function generateColors() {    
     // Re-generate dot sizes for each ring
     dotSizes = [];
     let maxRadius = 200 * 0.6;
@@ -83,29 +77,28 @@ function draw() {
 
 
   // Draw everything in this circle
-  function drawPatternCircle(x, y, r, scale) {
+  function drawPatternCircle(x, y, r, scale, dotNumber) {
     push();
     translate(x, y); 
 
     // Draw white background circle
-    fill(baseCircleColor);
+    fill(145, 150, 255);
     noStroke();
-    circle(0, 0, r * 1.3*scale);
+    circle(0, 0, r * 1.3 * scale);
 
     // Draw rotating red dots
     push();
     rotate(angleDots); 
-    drawOuterDots(0, 0, r);
+    drawOuterDots(0, 0, r, dotNumber);
     pop();
 
     // Draw the pink background circle
-    fill(bgColor);
-    stroke(strokeColor);
-    strokeWeight(5);
+    fill(213, 196, 232);
+    noStroke();
     circle(0, 0, r * 0.63);
 
     // Draw lines from center like spikes
-    stroke(lineColor);
+    stroke(98, 240, 224);
     let spikes = 30;
     let innerR = 20;
     let outerR = 59;
@@ -123,26 +116,26 @@ function draw() {
 
     // Small circles stacked in the center
     noStroke();
-    fill(255, 65, 70);
+    fill(98, 240, 224);
     circle(0, 0, r * 0.23);
 
-    fill(100, 130, 100);
+    fill(214, 178, 255);
     circle(0, 0, r * 0.2);
 
     noFill();
     stroke(80, 255, 120, 60);
     strokeWeight(2.5);
-    fill(180, 50, 80);
+    fill(189, 153, 255);
     circle(0, 0, r * 0.15);
 
-    fill(30, 180, 60);
+    fill(168, 106, 255);
     circle(0, 0, r * 0.07);
 
-    fill(255);
+    fill(126, 55, 255);
     circle(0, 0, r * 0.03);
 
     // Draw two black arcs for decoration
-    stroke(30, 40, 50, 90);
+    stroke(98, 240, 224);
     strokeWeight(2);
     noFill();
     arc(0, 0, 24, 23, PI * 1.05, PI * 1.85);
@@ -152,8 +145,8 @@ function draw() {
   }
 
   // Draw spinning rings of dots around the center
-  function drawOuterDots(x, y, r) {
-    let maxRadius = r * 0.6;
+  function drawOuterDots(x, y, r, dotNumber) {
+    let maxRadius = r * 0.6 * dotNumber;
     let ringIndex = 0;
 
     for (let i = 10; i < maxRadius; i += 12) {
@@ -164,7 +157,7 @@ function draw() {
         let angle = TWO_PI * j / numDots;
         let dx = x + cos(angle) * i;
         let dy = y + sin(angle) * i;
-        fill(outerDotColor);
+        fill(255);
         noStroke();
         ellipse(dx, dy, dotSize); // draw each dot
       }
