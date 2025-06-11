@@ -1,4 +1,4 @@
-let song, fft, button; // Music and control button variables
+let song, fft; // Music and control button variables
 let expandingCircles = []; // Used to store the expanding large circles
 let patternCircle; // Global variable: angle for rotating the spike lines, starts at 0
 
@@ -16,20 +16,19 @@ function setup() {
   fft = new p5.FFT();
   fft.setInput(song);
 
-  // Create a button to control music playback
-  button = createButton('Play/Pause');
-  // Position the button at the bottom center of the canvas
-  button.position((width - button.width) / 2, height - button.height - 10);
-  button.mousePressed(playPause);
-
   // Initialize the main pattern circle at the center with radius 200
   patternCircle = new PatternCircle(width / 2, height / 2, 200);
+}
+
+function keyPressed(){
+  
 }
 
 // Move the button when window size changes
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  button.position((width - button.width) / 2, height - button.height - 10);
+  patternCircle.x = width / 2;
+  patternCircle.y = height / 2;
 }
 
 // Use play/pause to control the play and pause of music
@@ -43,6 +42,12 @@ function playPause() {
 
 function draw() {
   background(20); // dark background
+  
+  fill(255, 70);
+  textAlign(CENTER, BOTTOM);
+  textSize(30);
+  text("Use keypress to play/pause the music", width / 2, height - 30);
+
 
   // Get average energy level from FFT spectrum and map it to rotation speed
   let spectrum = fft.analyze();
@@ -75,6 +80,7 @@ function draw() {
   // Update rotation angles and draw the central pattern circle
   patternCircle.update(speed);
   patternCircle.draw(scale, dotNumber, outerR);
+
 }
 
 // Class representing a large circle that expands and fades out to create ripple effect
@@ -205,5 +211,10 @@ class PatternCircle{
         ellipse(dx, dy, dotSize); // draw each dot
       }
     }
+  }
+}
+function keyPressed() {
+  if (key === ' ') {
+    playPause(); 
   }
 }
