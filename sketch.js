@@ -113,21 +113,6 @@ function draw() {
     arc(0, 0, 24, 23, PI * 1.05, PI * 1.85);
     arc(0, 0, 20, 25, PI * 0.45, PI * 0.75);
 
-    // Draw two animated bezier curves.
-    let rotateAngle = frameCount * 0.02;
-    push();
-    rotate(rotateAngle);
-
-    stroke(255, 0, 100);
-    strokeWeight(5);
-    noFill();
-    bezier(0, 0, r * 0.3, -r * 0.1, r * 0.5, r * 0.05, r * 0.65, r * 0.2);
-
-    stroke(255, 60, 160);
-    strokeWeight(3);
-    bezier(0, 0, r * 0.3, -r * 0.1, r * 0.5, r * 0.05, r * 0.65, r * 0.2);
-
-    pop(); // end bezier rotation
     pop(); // end main drawing
   }
 
