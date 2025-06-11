@@ -4,6 +4,7 @@ let outerDotColor;     // color for the dots in the outer rings (usually reddish
 let angleDots = 0;     // controls how much the red dots rotate
 let dotSizes = [];     // stores the size of each ring of dots
 let song, fft, button; // Music and control button variables
+let expandingCircles = []; // Used to store the expanding large circles
 
 function preload(){
   song = loadSound('audio/girlfriend.MP3');
@@ -59,6 +60,33 @@ function draw() {
   let dotNumber = map(level, 0, 255, 1.0, 2.5);
   let speed = map(level, 0, 255, 0.001, 0.05); // change sound level into rotation speed
   
+  //Whenever the beat gets stronger, new large circles are spawned at the center. 
+  // Each circle grows in size and fades out, creating a ripple-like effect—one ring per beat.
+  // Spawn a new expanding circle when the beat is strong.
+  // At most one circle is added every 5 frames to avoid overcrowding.
+  if (level > 100 && frameCount % 5 === 0) { 
+    expandingCircles.push({
+      radius: 120,
+      alpha: 255
+    });
+  }
+
+  // Update and display each expanding circle.
+  for (let i = expandingCircles.length - 1; i >= 0; i--) {
+    let c = expandingCircles[i];
+    c.radius += 5; // Grow larger each frame
+    c.alpha -= 2;  // Fade out each frame
+  
+    fill(145, 150, 255, c.alpha);
+    noStroke();  
+    ellipse(width / 2, height / 2, c.radius); 
+  
+    // Remove the circle when it is fully transparent
+    if (c.alpha <= 0) {
+      expandingCircles.splice(i, 1);
+    }
+  }
+
   drawPatternCircle(width / 2, height / 2, 200, scale, dotNumber);// draw at the center
   angleDots += speed;// controls how fast the red dots rotate
 }
@@ -84,7 +112,7 @@ function draw() {
     // Draw white background circle
     fill(145, 150, 255);
     noStroke();
-    circle(0, 0, r * 1.3 * scale);
+    circle(0, 0, r * 1.3);
 
     // Draw rotating red dots
     push();
@@ -93,7 +121,7 @@ function draw() {
     pop();
 
     // Draw the pink background circle
-    fill(213, 196, 232);
+    fill(145, 150, 255);
     noStroke();
     circle(0, 0, r * 0.63);
 
