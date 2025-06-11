@@ -1,9 +1,12 @@
 let strokeColor; 
-let baseCircleColor;   // color for the white background circle
-let outerDotColor;     // color for the red dots outside
+let baseCircleColor;   // color for the big background circle (usually light color)
+let outerDotColor;     // color for the dots in the outer rings (usually reddish)
 let angleDots = 0;     // controls how much the red dots rotate
 let dotSizes = [];     // stores the size of each ring of dots
 
+function preload(){
+  song = loadSound('audio/I want that.MP3');
+}
 
 function setup() {
   // Create the canvas using the size of the window
@@ -11,29 +14,59 @@ function setup() {
   angleMode(RADIANS); // use radians for angle measurements
   generateColors();
 
+  // Start music loop and connect FFT analyzer
+  song.loop();
+  fft = new p5.FFT();
+  fft.setInput(song);
+
+  // Create a button to control music playback
+  button = createButton('Play/Pause');
+  // Position the button at the bottom center of the canvas
+  button.position((width - button.width) / 2, height - button.height - 10);
+  button.mousePressed(playPause);
+
   // Set the size of the dots in each ring
   let maxRadius = 200 * 1.4; // same as used in drawOuterDots
-    for (let r = 10; r < maxRadius; r += 12) {
-      let size = random(3, 6); // fix a random size per ring
-      dotSizes.push(size);
-    }
+  for (let r = 10; r < maxRadius; r += 12) {
+    let size = random(3, 6); // fix a random size per ring
+    dotSizes.push(size);
+  }
+}
+
+// Move the button when window size changes
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  button.position((width - button.width) / 2, height - button.height - 10);
+}
+
+// Use play/pause to control the play and pause of music
+function playPause() {
+  if (song.isPlaying()) {
+    song.pause();
+  } else {
+    song.play();
+  }
 }
 
 function draw() {
   background(20); // dark background
+
+  // Get average energy level from FFT spectrum and map it to rotation speed
+  let spectrum = fft.analyze();
+  let level = fft.getEnergy("mid"); // Using "mid" frequency energy for visual sync
+  let speed = map(level, 0, 255, 0.001, 0.05); // change sound level into rotation speed
+  
   drawPatternCircle(width / 2, height / 2, 200);// draw at the center
-  angleDots += 0.005;// controls how fast the red dots rotate
+  angleDots += speed;// controls how fast the red dots rotate
 }
 
 
- // Generate new random colors
+ // Generate new random colors and dot sizes
   function generateColors() {
     // pastel colors for background circles
     strokeColor = color(random(0, 255), random(0, 100), random(10, 150));
     baseCircleColor = color(random(200, 255), random(200, 255), random(200, 255));
     bgColor = color(random(150, 255), random(150, 255), random(150, 255));
-    
-    // bright yellow for radial lines, vibrant red-purple for dots
     lineColor = color(random(200, 255), random(200, 255), random(0, 100));
     outerDotColor = color(random(0, 255), random(0, 80), random(0, 255));
     
@@ -86,7 +119,7 @@ function draw() {
       line(x1, y1, x2, y2);
     }
 
-    // // Layered small center circles
+    // Small circles stacked in the center
     noStroke();
     fill(255, 65, 70);
     circle(0, 0, r * 0.23);
@@ -116,10 +149,11 @@ function draw() {
     pop(); // end main drawing
   }
 
-  // Draw red dots in rings around the center
+  // Draw spinning rings of dots around the center
   function drawOuterDots(x, y, r) {
     let maxRadius = r * 0.6;
     let ringIndex = 0;
+
     for (let i = 10; i < maxRadius; i += 12) {
       let numDots = floor(TWO_PI * i / 10); // how many dots on this ring
       let dotSize = dotSizes[ringIndex];
